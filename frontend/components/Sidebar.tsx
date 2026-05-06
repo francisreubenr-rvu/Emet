@@ -77,7 +77,7 @@ export function Sidebar() {
   return (
     <aside
       style={{
-        width: "240px",
+        width: "260px",
         minHeight: "100vh",
         position: "fixed",
         left: 0,
@@ -85,19 +85,31 @@ export function Sidebar() {
         zIndex: 2000,
         background: "var(--bg-dark)",
         color: "var(--text-inverse)",
-        borderRight: "3px solid var(--accent-yellow)",
+        borderRight: "4px solid var(--accent-yellow)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
+        boxShadow: "10px 0px 0px rgba(0,0,0,0.1)"
       }}
     >
       <div>
-        <div style={{ padding: 18, borderBottom: "3px solid #1f1f1f" }}>
-          <h1 style={{ color: "var(--accent-yellow)", fontSize: 56, lineHeight: 1 }}>EMET</h1>
-          <p style={{ margin: 0, color: "#8f8f8f", fontSize: 11, letterSpacing: "0.12em" }}>v3.0 // DEFENSIVE PLATFORM</p>
+        <div style={{ padding: 24, borderBottom: "4px solid #1f1f1f", position: "relative" }}>
+          <h1 style={{ color: "var(--accent-yellow)", fontSize: 62, lineHeight: 0.8, marginBottom: 8 }}>EMET</h1>
+          <div style={{ 
+            fontSize: 9, 
+            background: "var(--accent-yellow)", 
+            color: "#000", 
+            display: "inline-block", 
+            padding: "2px 6px", 
+            fontWeight: 900,
+            letterSpacing: "0.15em"
+          }}>
+            SYSTEM v4.0 // PRO
+          </div>
+          <div style={{ position: "absolute", bottom: -2, right: 0, width: 40, height: 4, background: "var(--accent-yellow)" }} />
         </div>
 
-        <nav style={{ padding: 10, display: "grid", gap: 8 }}>
+        <nav style={{ padding: 12, display: "grid", gap: 6 }}>
           {navItems.map((item) => {
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
@@ -107,39 +119,62 @@ export function Sidebar() {
                 href={item.href}
                 className="sidebar-nav-item"
                 style={{
-                  border: "2px solid #000",
-                  borderLeft: active ? "4px solid var(--accent-yellow)" : "2px solid #000",
-                  padding: "12px 10px",
+                  border: "2px solid transparent",
+                  borderLeft: active ? "6px solid var(--accent-yellow)" : "2px solid transparent",
+                  padding: "14px 12px",
                   display: "flex",
-                  gap: 8,
+                  gap: 12,
                   alignItems: "center",
-                  fontWeight: 700,
-                  letterSpacing: "0.06em",
-                  background: active ? "#1A1A1A" : "#111",
-                  color: active ? "var(--accent-yellow)" : "#c4c4c4",
+                  fontWeight: 800,
+                  letterSpacing: "0.08em",
+                  background: active ? "#111" : "transparent",
+                  color: active ? "var(--accent-yellow)" : "#888",
                   textTransform: "uppercase",
-                  transition: "none",
+                  fontSize: 10,
                 }}
               >
-                <Icon size={18} />
-                <span style={{ fontSize: 11 }}>{item.label}</span>
+                <Icon size={16} strokeWidth={active ? 3 : 2} />
+                <span>{item.label}</span>
               </Link>
             );
           })}
         </nav>
       </div>
 
-      <div style={{ padding: 14, borderTop: "3px solid #1f1f1f", display: "grid", gap: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, letterSpacing: "0.08em" }}>
-          <span className="status-square" style={{ background: backendOnline ? "var(--accent-green)" : "var(--accent-red)" }} />
-          <span>{backendOnline ? "BACKEND ONLINE" : "BACKEND OFFLINE"}</span>
-          <Wifi size={14} color={backendOnline ? "#00ff6a" : "#ff2d2d"} />
+      <div style={{ padding: 16, borderTop: "4px solid #1f1f1f", display: "grid", gap: 12, background: "#080808" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 10, fontWeight: 900, letterSpacing: "0.1em" }}>
+          <div style={{ 
+            width: 10, 
+            height: 10, 
+            background: backendOnline ? "var(--accent-green)" : "var(--accent-red)",
+            boxShadow: backendOnline ? "0 0 10px var(--accent-green)" : "0 0 10px var(--accent-red)"
+          }} />
+          <span style={{ color: backendOnline ? "var(--accent-green)" : "var(--accent-red)" }}>
+            {backendOnline ? "CORE ONLINE" : "SYSTEM OFFLINE"}
+          </span>
         </div>
-        <div style={{ border: "2px solid #333", padding: 8, display: "grid", gap: 6 }}>
-          <div style={{ fontWeight: 700, fontSize: 12 }}>QUEUE DEPTH // {queueDepth === null ? "N/A" : queueDepth}</div>
+        
+        <div style={{ border: "2px solid #222", padding: 12, position: "relative" }}>
+          <div style={{ position: "absolute", top: -8, left: 8, background: "#080808", padding: "0 4px", fontSize: 8, color: "#444", fontWeight: 800 }}>QUEUE_METRICS</div>
+          <div style={{ fontWeight: 900, fontSize: 14, color: "#fff" }}>
+            DEPTH: <span style={{ color: "var(--accent-yellow)" }}>{queueDepth === null ? "ERR" : queueDepth}</span>
+          </div>
           <button
-            className="neo-btn"
-            style={{ width: "100%", marginTop: 4, background: "#fff", color: "#000", padding: "8px 10px", display: "flex", alignItems: "center", gap: 8, justifyContent: "center" }}
+            style={{ 
+              width: "100%", 
+              marginTop: 12, 
+              background: "var(--accent-yellow)", 
+              color: "#000", 
+              padding: "10px", 
+              border: "none",
+              fontWeight: 900,
+              fontSize: 10,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8
+            }}
             onClick={async () => {
               try {
                 await logout();
@@ -148,8 +183,8 @@ export function Sidebar() {
               }
             }}
           >
-            <LogOut size={14} />
-            LOGOUT
+            <LogOut size={14} strokeWidth={3} />
+            INIT_LOGOUT
           </button>
         </div>
       </div>

@@ -18,6 +18,8 @@ const emptyStats: DashboardStats = {
   evaluation_summary: { latest_f1: 0, latest_accuracy: 0 },
 };
 
+import { LayoutDashboard } from "lucide-react";
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats>(emptyStats);
   const [recentScans, setRecentScans] = useState<ScanReport[]>([]);
@@ -74,171 +76,101 @@ export default function DashboardPage() {
   }, [stats]);
 
   const topStats = [
-    { label: "TOTAL SCANS", value: String(stats.total_scans) },
-    { label: "ACTIVE SCANS", value: String(stats.active_scans) },
-    { label: "CRITICAL FINDINGS", value: String(stats.critical_findings) },
-    { label: "VERIFIED FINDINGS", value: String(stats.verified_findings) },
+    { label: "TOTAL SCANS", value: String(stats.total_scans), ref: "SC-01" },
+    { label: "ACTIVE SCANS", value: String(stats.active_scans), ref: "SC-02" },
+    { label: "CRITICAL FINDINGS", value: String(stats.critical_findings), ref: "VF-01" },
+    { label: "VERIFIED FINDINGS", value: String(stats.verified_findings), ref: "VF-02" },
   ];
 
   return (
-    <div style={{ display: "grid", gap: 18 }}>
-      <SectionTitle>Dashboard</SectionTitle>
+    <div style={{ display: "grid", gap: 24 }}>
+      <SectionTitle 
+        subtitle="Operational Intelligence & Threat Vector Surface" 
+        icon={LayoutDashboard}
+      >
+        Dashboard
+      </SectionTitle>
 
-      <section style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 12 }}>
+      <section style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16 }}>
         {topStats.map((item) => (
-          <Panel key={item.label}>
-            <div style={{ padding: 14, minHeight: 150, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-              <p style={{ margin: 0, fontSize: 11, fontWeight: 700, textTransform: "uppercase", fontFamily: "var(--font-body)" }}>{item.label}</p>
-              <p style={{ margin: "8px 0 0", fontSize: 64, fontFamily: "var(--font-display)", fontWeight: 700, lineHeight: 1 }}>{item.value}</p>
+          <Panel key={item.label} refId={item.ref}>
+            <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <p style={{ margin: 0, fontSize: 10, fontWeight: 900, textTransform: "uppercase", color: "#888" }}>{item.label}</p>
+              <p style={{ margin: "8px 0 0", fontSize: 56, fontFamily: "var(--font-display)", fontWeight: 900, lineHeight: 1 }}>{item.value}</p>
             </div>
           </Panel>
         ))}
       </section>
 
-      <Panel>
-        <div style={{ padding: 12, background: "#fff4a3", borderBottom: "2px solid #000", fontWeight: 800 }}>
-          AUTHORIZATION NOTICE: Run scans only against assets you are explicitly authorized to assess.
+      <Panel refId="AUTH-NOTICE" style={{ background: "var(--accent-yellow)", color: "#000" }}>
+        <div style={{ fontWeight: 900, fontSize: 13, letterSpacing: "0.05em" }}>
+          🚨 AUTHORIZATION NOTICE: RUN SCANS ONLY AGAINST ASSETS YOU ARE EXPLICITLY AUTHORIZED TO ASSESS.
         </div>
       </Panel>
 
-      <section style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 12 }}>
-        <Panel>
-          <div style={{ padding: 14 }}>
-            <h3 style={{ fontSize: 28 }}>Recent Scans</h3>
-            {recentScans.length === 0 ? <p style={{ marginTop: 12 }}>No scans yet. Launch your first authorized scan from Scan Orchestration.</p> : null}
+      <section style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 24 }}>
+        <Panel refId="SCAN-LOG">
+          <h3 style={{ fontSize: 28, marginBottom: 16 }}>Recent Scans</h3>
+          {recentScans.length === 0 ? <p style={{ marginTop: 12 }}>No scans yet. Launch your first authorized scan from Scan Orchestration.</p> : null}
+          <div style={{ display: "grid", gap: 0 }}>
             {recentScans.map((row) => (
-              <div key={row.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 120px", padding: "10px 0", borderTop: "2px solid #000" }}>
+              <div key={row.id} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 120px", padding: "14px 0", borderTop: "2px solid #eee" }}>
                 <strong>{row.target}</strong>
-                <span>{new Date(row.date).toLocaleString()}</span>
-                <span className={`severity-badge severity-${row.severity}`} style={{ width: "fit-content" }}>{row.severity}</span>
+                <span style={{ fontSize: 11, color: "#666" }}>{new Date(row.date).toLocaleString()}</span>
+                <span className={`severity-badge severity-${row.severity}`} style={{ width: "fit-content", background: severityBars.find(b => b.label.toUpperCase() === row.severity)?.color || "#eee" }}>{row.severity}</span>
               </div>
             ))}
           </div>
         </Panel>
 
-        <Panel>
-          <div style={{ padding: 14 }}>
-            <h3 style={{ fontSize: 28 }}>Severity Distribution</h3>
-            <div style={{ display: "grid", gap: 10, marginTop: 10 }}>
-              {severityBars.map((item) => (
-                <div key={item.label}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 700 }}>
-                    <span>{item.label.toUpperCase()}</span>
-                    <span>{item.value}%</span>
-                  </div>
-                  <div style={{ border: "2px solid #000", height: 24, background: "#fff" }}>
-                    <div style={{ width: `${item.value}%`, height: "100%", background: item.color, borderRight: "2px solid #000" }} />
-                  </div>
+        <Panel refId="DIST-01">
+          <h3 style={{ fontSize: 28, marginBottom: 16 }}>Severity Distribution</h3>
+          <div style={{ display: "grid", gap: 12 }}>
+            {severityBars.map((item) => (
+              <div key={item.label}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontWeight: 900, marginBottom: 4 }}>
+                  <span>{item.label.toUpperCase()}</span>
+                  <span>{item.value}%</span>
                 </div>
-              ))}
-            </div>
+                <div style={{ border: "3px solid #000", height: 28, background: "#f0f0f0", position: "relative" }}>
+                  <div style={{ width: `${item.value}%`, height: "100%", background: item.color, borderRight: "3px solid #000" }} />
+                </div>
+              </div>
+            ))}
           </div>
         </Panel>
       </section>
 
-      <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <Panel>
-          <div style={{ padding: 14 }}>
-            <h3 style={{ fontSize: 28 }}>Operational Snapshot</h3>
+      <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+        <Panel refId="OPS-01">
+          <h3 style={{ fontSize: 28, marginBottom: 16 }}>Operational Snapshot</h3>
+          <div style={{ display: "grid", gap: 0 }}>
             {[
               ["Queue health", stats.queue_health.toUpperCase(), "var(--accent-yellow)"],
               ["RAG availability", stats.rag_availability.toUpperCase(), "var(--accent-blue)"],
               ["Latest eval F1", String(stats.evaluation_summary.latest_f1), "var(--accent-green)"],
               ["Latest eval accuracy", String(stats.evaluation_summary.latest_accuracy), "var(--accent-green)"],
             ].map((item) => (
-              <div key={item[0]} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderTop: "2px solid #000" }}>
-                <span style={{ fontWeight: 700 }}>{item[0]}</span>
-                <span style={{ border: "2px solid #000", padding: "2px 8px", background: item[2] as string, fontWeight: 800 }}>{item[1]}</span>
+              <div key={item[0]} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderTop: "2px solid #eee" }}>
+                <span style={{ fontWeight: 800, fontSize: 12 }}>{item[0].toUpperCase()}</span>
+                <span style={{ border: "2px solid #000", padding: "4px 10px", background: item[2] as string, fontWeight: 900, fontSize: 10 }}>{item[1]}</span>
               </div>
             ))}
           </div>
         </Panel>
 
-        <Panel>
-          <div style={{ padding: 14 }}>
-            <h3 style={{ fontSize: 28 }}>Scanner Health</h3>
-            {scannerHealth.length === 0 ? <p style={{ marginTop: 12 }}>No scanner health data available.</p> : null}
+        <Panel refId="HEALTH-01">
+          <h3 style={{ fontSize: 28, marginBottom: 16 }}>Scanner Health</h3>
+          {scannerHealth.length === 0 ? <p style={{ marginTop: 12 }}>No scanner health data available.</p> : null}
+          <div style={{ display: "grid", gap: 0 }}>
             {scannerHealth.map((item) => (
-              <div key={item.scanner} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderTop: "2px solid #000" }}>
-                <span style={{ fontWeight: 700 }}>{item.scanner.toUpperCase()}</span>
-                <span style={{ border: "2px solid #000", padding: "2px 8px", background: item.available ? "var(--accent-green)" : "var(--accent-red)", fontWeight: 800 }}>
-                  {item.available ? "AVAILABLE" : "UNAVAILABLE"}
+              <div key={item.scanner} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderTop: "2px solid #eee" }}>
+                <span style={{ fontWeight: 800, fontSize: 12 }}>{item.scanner.toUpperCase()}</span>
+                <span style={{ border: "2px solid #000", padding: "4px 10px", background: item.available ? "var(--accent-green)" : "var(--accent-red)", fontWeight: 900, fontSize: 10 }}>
+                  {item.available ? "ACTIVE" : "OFFLINE"}
                 </span>
               </div>
             ))}
-          </div>
-        </Panel>
-      </section>
-
-      <section style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <Panel>
-          <div style={{ padding: 14 }}>
-            <h3 style={{ fontSize: 28 }}>Queue Partitions</h3>
-            {queueHealth ? (
-              <>
-                {Object.entries(queueHealth.queues).map(([name, depth]) => (
-                  <div key={name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderTop: "2px solid #000" }}>
-                    <span style={{ fontWeight: 700 }}>{name.toUpperCase()}</span>
-                    <span style={{ border: "2px solid #000", padding: "2px 8px", fontWeight: 800 }}>
-                      {depth} • oldest {queueHealth.queue_oldest_age_seconds[name] || 0}s
-                    </span>
-                  </div>
-                ))}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderTop: "2px solid #000" }}>
-                  <span style={{ fontWeight: 700 }}>TOTAL DEPTH</span>
-                  <span style={{ border: "2px solid #000", padding: "2px 8px", fontWeight: 800 }}>{queueHealth.total_depth}</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderTop: "2px solid #000" }}>
-                  <span style={{ fontWeight: 700 }}>DEAD LETTER</span>
-                  <span style={{ border: "2px solid #000", padding: "2px 8px", fontWeight: 800, background: queueHealth.dead_letter_depth > 0 ? "var(--accent-red)" : "var(--accent-green)" }}>
-                    {queueHealth.dead_letter_depth}
-                  </span>
-                </div>
-                <div style={{ marginTop: 10, display: "flex", gap: 8, alignItems: "center" }}>
-                  <NeoButton
-                    style={{ background: "#000", color: "var(--accent-yellow)", padding: "6px 10px" }}
-                    onClick={() => {
-                      void replayDeadLetter()
-                        .then((res) => {
-                          setOpsActionText(`Replayed to ${res.target_queue}`);
-                          return getOperationsQueue().then(setQueueHealth);
-                        })
-                        .catch(() => setOpsActionText("Replay failed or requires admin"));
-                    }}
-                  >
-                    REPLAY DEAD LETTER
-                  </NeoButton>
-                  <span style={{ fontSize: 12, fontWeight: 700 }}>{opsActionText}</span>
-                </div>
-              </>
-            ) : (
-              <p style={{ marginTop: 12 }}>Queue health unavailable.</p>
-            )}
-          </div>
-        </Panel>
-
-        <Panel>
-          <div style={{ padding: 14 }}>
-            <h3 style={{ fontSize: 28 }}>Workers</h3>
-            {workers.length === 0 ? <p style={{ marginTop: 12 }}>No worker heartbeat signals.</p> : null}
-            {workers.map((item) => (
-              <div key={item.worker_id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderTop: "2px solid #000" }}>
-                <span style={{ fontWeight: 700 }}>{item.worker_id}</span>
-                <span style={{ fontSize: 12 }}>{new Date(item.heartbeat).toLocaleTimeString()}</span>
-              </div>
-            ))}
-            <div style={{ marginTop: 10, borderTop: "2px solid #000", paddingTop: 10 }}>
-              <strong style={{ fontSize: 12 }}>Worker throughput</strong>
-              {workerMetrics.map((row) => (
-                <div key={row.worker_id} style={{ marginTop: 8, fontSize: 12, border: "2px solid #000", padding: 8 }}>
-                  <div style={{ fontWeight: 700 }}>{row.worker_id}</div>
-                  <div>picked: {row.metrics.picked || 0} | completed: {row.metrics.completed || 0} | failed: {row.metrics.failed || 0}</div>
-                  <div>
-                    per-scanner proxy: nmap {row.metrics["scanner:nmap"] || 0} | nuclei {row.metrics["scanner:nuclei"] || 0} | rustscan {row.metrics["scanner:rustscan"] || 0}
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </Panel>
       </section>
