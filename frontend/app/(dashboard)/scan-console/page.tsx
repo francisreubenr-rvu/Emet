@@ -64,8 +64,17 @@ export default function ScanConsolePage() {
   const ACTIVE_SCAN_KEY = "emet.activeScan";
 
   const valid = useMemo(
-    () => /^(https?:\/\/)?([\w.-]+)(:\d+)?(\/.*)?$/.test(target) || /^(\d{1,3}\.){3}\d{1,3}$/.test(target),
+    () => 
+      /^(https?:\/\/)?([\w.-]+)(:\d+)?(\/.*)?$/.test(target) || 
+      /^(\d{1,3}\.){3}\d{1,3}$/.test(target) ||
+      target.startsWith("repo:") ||
+      target.startsWith("file://"),
     [target],
+  );
+
+  const isRepoToolSelected = useMemo(
+    () => selected.some(s => ["trivy", "semgrep", "gitleaks"].includes(s)),
+    [selected]
   );
 
   const sseUrl = scanId ? buildScanProgressSseUrl(scanId) : "";
@@ -287,10 +296,11 @@ export default function ScanConsolePage() {
             <h3 className="page-title">NEW SCAN JOB</h3>
 
             <div style={{ marginTop: 12 }}>
-              <p style={{ margin: "0 0 6px", fontWeight: 800, letterSpacing: "0.06em" }}>TARGET URL / IP ADDRESS</p>
+              <p style={{ margin: "0 0 6px", fontWeight: 800, letterSpacing: "0.06em" }}>TARGET URL / IP ADDRESS / REPO PATH</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
                 <input
                   value={target}
+                  placeholder={isRepoToolSelected ? "repo:/path/to/project" : "https://example.com or 1.2.3.4"}
                   onChange={(event) => setTarget(event.target.value)}
                   style={{ border: "3px solid #000", boxShadow: "var(--shadow)", padding: 12, fontFamily: "inherit", fontSize: 16 }}
                 />
@@ -298,6 +308,11 @@ export default function ScanConsolePage() {
                   {target ? (valid ? "OK" : "NO") : "--"}
                 </div>
               </div>
+              {isRepoToolSelected && (
+                <p style={{ margin: "8px 0 0", fontSize: 11, fontWeight: 900, color: "var(--accent-blue)" }}>
+                  💡 REPOSITORY SCANNING ACTIVE: Target must start with 'repo:' or 'file://' (e.g. repo:/app)
+                </p>
+              )}
               <p style={{ margin: "8px 0 0", fontSize: 11, fontWeight: 700 }}>
                 AUTHORIZATION REQUIRED: Scan only approved assets. Private/internal ranges are blocked by default.
               </p>
@@ -447,8 +462,8 @@ export default function ScanConsolePage() {
                 <div className="code-log" style={{ border: "2px solid #000", minHeight: 220, padding: 10 }}>
                   [SSE] {scanId ? (connected ? "CONNECTED" : "DISCONNECTED") : "NOT STARTED"}
                   <br />
-                  {progressEvents.slice(-20).map((event) => (
-                    <span key={`${event.sequence || event.timestamp}-${event.phase}`}>
+                  {progressEvents.slice(-20).map((event, idx) => (
+                    <span key={`${idx}-${event.phase}`}>
                       [LOG] {event.phase} :: {event.message || "update"}
                       <br />
                     </span>

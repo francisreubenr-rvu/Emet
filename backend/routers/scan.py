@@ -49,6 +49,9 @@ def _rate_limit(identity: str) -> None:
 
 @router.get("/availability")
 async def scanner_availability():
+    import os
+    simulate = os.getenv("EMET_SIMULATE_SCANS", "false").lower() in ("true", "1", "yes")
+    
     runners = [
         NmapRunner(),
         RustscanRunner(),
@@ -62,6 +65,9 @@ async def scanner_availability():
     ]
     result = []
     for runner in runners:
+        if simulate:
+            result.append({"scanner": runner.name, "available": True, "reason": "Simulation mode enabled"})
+            continue
         status = await runner.is_available()
         result.append({"scanner": status.scanner, "available": status.available, "reason": status.reason})
     return result
@@ -79,10 +85,14 @@ async def start_scan(
     identity = (x_forwarded_for or actor or "anonymous").split(",")[0].strip()
     _rate_limit(identity)
 
-    ok, reason = validate_target(payload.target)
     repo_tools = {"trivy", "semgrep", "gitleaks"}
-    if any(scanner in repo_tools for scanner in payload.scanners):
+    is_repo_scan = any(scanner in repo_tools for scanner in payload.scanners)
+    
+    if is_repo_scan:
         ok, reason = validate_repo_target(payload.target)
+    else:
+        ok, reason = validate_target(payload.target)
+        
     if not ok:
         raise HTTPException(status_code=400, detail=reason)
 

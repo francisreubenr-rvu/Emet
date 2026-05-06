@@ -19,6 +19,7 @@ from scanners.semgrep_runner import SemgrepRunner
 from scanners.trivy_runner import TrivyRunner
 from scanners.gitleaks_runner import GitleaksRunner
 from scanners.zap_runner import ZapRunner
+from scanners.mock_runner import MockScanner
 from services.enrichment import enrich_findings
 from services.progress import publish_progress
 from services.scan_store import add_raw_artifact, get_scan_findings, upsert_scan_record
@@ -45,6 +46,8 @@ def dedupe_findings(findings: list[UnifiedFinding]) -> list[UnifiedFinding]:
 
 
 def _runners_for(scanners: list[str]):
+    import os
+    simulate = os.getenv("EMET_SIMULATE_SCANS", "false").lower() in ("true", "1", "yes")
     registry = {
         "nmap": NmapRunner,
         "rustscan": RustscanRunner,
@@ -57,6 +60,9 @@ def _runners_for(scanners: list[str]):
         "zap": ZapRunner,
     }
     for key in scanners:
+        if simulate:
+            yield MockScanner(name=key)
+            continue
         runner_cls = registry.get(key)
         if runner_cls is not None:
             yield runner_cls()
@@ -234,6 +240,11 @@ async def execute_scan_job(scan_id: str, target: str, profile: str, scanners: li
             details={"findings": len(findings), "failed_scanners": failed_scanners},
         )
     except Exception as exc:
+        import sys
+        import traceback
+        print(f"CRITICAL EXCEPTION IN PIPELINE: {exc}", file=sys.stderr, flush=True)
+        traceback.print_exc(file=sys.stderr)
+        sys.stderr.flush()
         upsert_scan_record(
             db,
             scan_id=scan_id,

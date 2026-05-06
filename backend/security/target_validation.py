@@ -89,6 +89,9 @@ def validate_repo_target(target: str) -> tuple[bool, str]:
     else:
         return False, "Repository target must start with repo: or file://"
 
+    if _bool_env("EMET_SIMULATE_SCANS", default=False):
+        return True, "ok"
+
     candidate = Path(raw).expanduser().resolve()
     root = Path(os.getenv("SCAN_REPO_ALLOWED_ROOT", "/app")).expanduser().resolve()
     try:
