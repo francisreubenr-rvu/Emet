@@ -145,9 +145,17 @@ export default function ScanReportsPage() {
                   <div key={`${item.finding_id || item.cve_id || item.title}-${item.port || 0}`} style={{ border: "2px solid #000", marginBottom: 8, padding: 8 }}>
                     <div style={{ fontWeight: 800 }}>{item.cve_id || "UNCLASSIFIED"} - {item.title}</div>
                     <div style={{ fontSize: 13 }}>{item.description}</div>
-                    <div style={{ fontSize: 12, marginTop: 6 }}>
-                      Component: {item.affected_component} | Severity: {item.severity} | Verification: {item.verification_status || "unverified"}
+                    <div style={{ fontSize: 12, marginTop: 6, display: "flex", flexWrap: "wrap", gap: 12 }}>
+                      <span>Component: {item.affected_component}</span>
+                      <span>Severity: {item.severity}</span>
+                      <span style={{ fontWeight: 800, color: "var(--accent-red)" }}>Risk Score: {item.dynamic_risk_score?.toFixed(1) || '0.0'}</span>
+                      <span>Verification: {item.verification_status || "unverified"}</span>
                     </div>
+                    {item.compliance_violations?.length > 0 && (
+                      <div style={{ marginTop: 6, fontSize: 11, background: "#000", padding: "4px 8px", color: "var(--accent-yellow)" }}>
+                        COMPLIANCE VIOLATIONS: {item.compliance_violations.join(", ")}
+                      </div>
+                    )}
                     <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                       <button
                         className="neo-btn"

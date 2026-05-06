@@ -17,6 +17,11 @@ class AgentRegisterPayload(BaseModel):
     ip_address: str = ""
     version: str = "1.0.0"
 
+@router.get("/")
+async def list_agents(db: Session = Depends(get_db)):
+    agents = db.query(AgentModel).all()
+    return agents
+
 @router.post("/register")
 async def register_agent(payload: AgentRegisterPayload, db: Session = Depends(get_db)):
     if not payload.id:

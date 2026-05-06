@@ -216,6 +216,47 @@ export async function getDatasetHistory() {
   return request<DatasetHistoryRow[]>("/api/settings/dataset-history");
 }
 
+export async function getAgents() {
+  return request<any[]>("/api/v1/agents");
+}
+
+export async function getTickets() {
+  return request<any[]>("/api/v1/remediation/tickets");
+}
+
+export async function syncTicket(ticketId: number) {
+  return request<any>("/api/v1/remediation/sync", {
+    method: "POST",
+    params: { ticket_id: ticketId },
+  });
+}
+
+export async function deployPatch(vulnerabilityId: string) {
+  return request<any>("/api/v1/patching/deploy", {
+    method: "POST",
+    body: JSON.stringify({ vulnerability_id: vulnerabilityId }),
+  });
+}
+
+export async function getPatchJob(jobId: number) {
+  return request<any>(`/api/v1/patching/jobs/${jobId}`);
+}
+
+export async function getComplianceReport(framework: string) {
+  return request<any[]>(`/api/v1/compliance/${framework}`);
+}
+
+export async function listTenants() {
+  return request<any[]>("/api/tenants");
+}
+
+export async function createTenant(name: string, domain: string = "") {
+  return request<any>("/api/tenants", {
+    method: "POST",
+    body: JSON.stringify({ name, domain }),
+  });
+}
+
 export function buildScanProgressSseUrl(scanId: string): string {
   const base = API_BASE.replace(/\/$/, "");
   return `${base}/api/scan/${scanId}/events`;

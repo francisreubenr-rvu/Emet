@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   BarChart3,
   BotMessageSquare,
+  CheckCircle,
   FileSearch,
   FileText,
   LayoutDashboard,
@@ -14,7 +15,10 @@ import {
   Settings,
   ShieldAlert,
   Split,
+  Ticket,
+  Users,
   Wifi,
+  Server,
 } from "lucide-react";
 
 import { getHealth, logout } from "@/lib/api";
@@ -23,6 +27,10 @@ const navItems = [
   { href: "/dashboard", label: "DASHBOARD", icon: LayoutDashboard },
   { href: "/scan-console", label: "SCAN ORCHESTRATION", icon: Radar },
   { href: "/scan-reports", label: "REPORTS", icon: FileText },
+  { href: "/agents", label: "AGENTS", icon: Server },
+  { href: "/remediation", label: "REMEDIATION", icon: Ticket },
+  { href: "/compliance", label: "COMPLIANCE", icon: CheckCircle },
+  { href: "/tenants", label: "TENANTS", icon: Users },
   { href: "/cve-explorer", label: "CVE EXPLORER", icon: FileSearch },
   { href: "/attack-paths", label: "ATTACK PATHS", icon: Split },
   { href: "/rag-chat", label: "RAG CHAT", icon: BotMessageSquare },

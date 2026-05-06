@@ -25,6 +25,8 @@ from routers.vulnerabilities import router as vulnerabilities_router
 from routers.patching import router as patching_router
 from routers.tenants import router as tenants_router
 from routers.compliance import router as compliance_router
+from routers.agents import router as agents_router
+from routers.remediation import router as remediation_router
 from scanners.nmap_runner import NmapRunner
 from scanners.nessus_runner import NessusRunner
 from scanners.nuclei_runner import NucleiRunner
