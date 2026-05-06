@@ -1,0 +1,97 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+
+\title{\textbf{EMET - Quick Start Guide}}
+\author{EMET Development Team}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Introduction}
+EMET is a defensive-first vulnerability orchestration platform focused on evidence, provenance, and analyst workflows. This guide covers how to set up and run the EMET platform, either via Docker or manually.
+
+\section{Docker Quick Start (Recommended)}
+
+Using Docker Compose is the easiest way to start the EMET stack, which includes the frontend, backend, worker, and necessary databases.
+
+\begin{enumerate}
+    \item \textbf{Setup the Environment:}\\
+    Copy the example environment variables file to create your own configuration.
+    \begin{lstlisting}[language=bash, frame=single, backgroundcolor=\color{lightgray!20}]
+cp .env.example .env
+    \end{lstlisting}
+
+    \item \textbf{Start the Stack:}\\
+    Build and start all services in detached mode.
+    \begin{lstlisting}[language=bash, frame=single, backgroundcolor=\color{lightgray!20}]
+docker compose up --build -d
+    \end{lstlisting}
+
+    \item \textbf{Access the Application:}\\
+    Once the containers are running, you can access the following services:
+    \begin{itemize}
+        \item \textbf{Frontend GUI:} \url{http://localhost:3000}
+        \item \textbf{Backend Health Check:} \url{http://localhost:8000/api/health}
+        \item \textbf{Backend Readiness:} \url{http://localhost:8000/api/readiness}
+    \end{itemize}
+
+    \item \textbf{Demo Credentials:}\\
+    Use the following accounts to log into the frontend dashboard:
+    \begin{itemize}
+        \item Analyst: \texttt{analyst@emet.local} / Password: \texttt{emet}
+        \item Guest (Read-Only): \texttt{guest} / Password: \texttt{emet}
+    \end{itemize}
+\end{enumerate}
+
+\section{Manual Startup (Without Docker)}
+
+If you prefer to run the components directly on your host machine, you will need to start the Frontend, Backend API, and Backend Worker separately.
+
+\subsection{Frontend}
+\begin{lstlisting}[language=bash, frame=single, backgroundcolor=\color{lightgray!20}]
+cd frontend
+npm install
+npm run dev
+\end{lstlisting}
+The UI will be available at \url{http://localhost:3000}.
+
+\subsection{Backend API}
+\begin{lstlisting}[language=bash, frame=single, backgroundcolor=\color{lightgray!20}]
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+\end{lstlisting}
+
+\subsection{Backend Worker}
+In a separate terminal window, start the task worker to process scan jobs.
+\begin{lstlisting}[language=bash, frame=single, backgroundcolor=\color{lightgray!20}]
+cd backend
+source .venv/bin/activate
+python worker.py
+\end{lstlisting}
+
+\section{Optional Services}
+
+\textbf{Graph Mode (Neo4j)}\\
+If you are testing Attack Paths and require Neo4j to be running:
+\begin{lstlisting}[language=bash, frame=single, backgroundcolor=\color{lightgray!20}]
+docker compose --profile graph up -d neo4j
+\end{lstlisting}
+
+\section*{Important Notes}
+\begin{itemize}
+    \item EMET is defensive-only and does not generate exploit code.
+    \item Private/internal targets are blocked by default. To scan internal networks, you must set \texttt{ALLOW\_INTERNAL\_SCANNING=true} in your \texttt{.env} file.
+    \item If AI model keys are missing, RAG capabilities and evaluation will continue to run in an explicit fallback mode.
+\end{itemize}
+
+\end{document}

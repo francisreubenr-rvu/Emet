@@ -1,0 +1,78 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_APP_NAME=EMET
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql+psycopg://emet:emet_password@postgres:5432/emet
+    volumes:
+      - ./datasets:/app/datasets
+      - ./embeddings:/app/embeddings
+      - ./artifacts:/app/artifacts
+    depends_on:
+      - postgres
+      - redis
+
+  worker:
+    build: ./backend
+    command: python worker.py
+    env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql+psycopg://emet:emet_password@postgres:5432/emet
+    volumes:
+      - ./datasets:/app/datasets
+      - ./embeddings:/app/embeddings
+      - ./artifacts:/app/artifacts
+    depends_on:
+      - backend
+      - redis
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: emet
+      POSTGRES_USER: emet
+      POSTGRES_PASSWORD: emet_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U emet -d emet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  neo4j:
+    image: neo4j:5
+    profiles: ["graph"]
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/emet_change_me
+    volumes:
+      - neo4jdata:/data
+
+volumes:
+  pgdata:
+  neo4jdata:
