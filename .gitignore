@@ -18,4 +18,5 @@ __pycache__/
 # Data artifacts
 datasets/
 embeddings/
+emet.db
 backend/emet.db
