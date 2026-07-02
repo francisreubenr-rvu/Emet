@@ -53,7 +53,7 @@ def test_execute_scan_job_with_unavailable_scanners_marks_complete_with_partial_
             )
 
     monkeypatch.setattr(pipeline, "_runners_for", lambda scanners: [FakeRunner(), UnavailableRunner("rustscan")])
-    monkeypatch.setattr(pipeline, "run_rag_pipeline", lambda findings: asyncio.sleep(0, result={"context": ""}))
+    monkeypatch.setattr(pipeline, "run_rag_pipeline", lambda findings, session=None: asyncio.sleep(0, result={"context": ""}))
     monkeypatch.setattr(
         pipeline,
         "analyze_findings",

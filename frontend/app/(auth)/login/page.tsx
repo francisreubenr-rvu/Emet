@@ -34,54 +34,57 @@ export default function LoginPage() {
     <div style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 1fr", background: "#f2f2f2" }}>
       <section style={{ height: "100vh", background: "#000", color: "#fff", padding: 64, display: "grid", alignContent: "center", borderRight: "6px solid var(--accent-yellow)", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0.1, backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-        <h1 style={{ fontSize: 120, lineHeight: 0.7, marginBottom: 12, fontFamily: "var(--font-display)", fontWeight: 900, color: "var(--accent-yellow)" }}>EMET</h1>
-        <div style={{ display: "inline-block", background: "var(--accent-yellow)", color: "#000", padding: "4px 12px", fontWeight: 900, fontSize: 12, letterSpacing: "0.2em", width: "fit-content" }}>
-          DEFENSIVE ORCHESTRATOR v4.0
+        <h1 style={{ fontSize: 84, lineHeight: 0.85, marginBottom: 14, fontFamily: "var(--font-display)", color: "var(--accent)" }}>EMET</h1>
+        <div style={{ display: "inline-block", background: "var(--accent)", color: "#000", padding: "4px 12px", fontWeight: 700, fontSize: 12, letterSpacing: "0.12em", width: "fit-content", borderRadius: 3 }}>
+          DEFENSIVE VULNERABILITY SCANNER
         </div>
-        <p style={{ marginTop: 32, maxWidth: 440, letterSpacing: "0.04em", fontWeight: 800, fontSize: 18, lineHeight: 1.4 }}>
-          "THE BONES OF THE SYSTEM ARE VISIBLE. TRUST IS BUILT THROUGH TRANSPARENCY."
+        <p style={{ marginTop: 28, maxWidth: 440, letterSpacing: "0.01em", fontWeight: 500, fontSize: 15, lineHeight: 1.6, color: "#d4d4d8" }}>
+          Orchestrated scanning, real threat-intelligence enrichment (NVD, EPSS, CISA KEV),
+          and AI-assisted analysis — with transparent provenance for every finding.
         </p>
-        <div style={{ marginTop: 64, display: "flex", gap: 24, opacity: 0.4 }}>
-          <div style={{ border: "2px solid #fff", padding: "8px 12px", fontSize: 10, fontWeight: 900 }}>NODE: US-EAST-01</div>
-          <div style={{ border: "2px solid #fff", padding: "8px 12px", fontSize: 10, fontWeight: 900 }}>PROTO: SECURE_V4</div>
-        </div>
       </section>
 
       <section style={{ padding: "8vw", display: "grid", alignContent: "center", position: "relative" }}>
-        <form className="neo-panel" onSubmit={submit} style={{ maxWidth: 480, width: "100%", background: "#fff" }} data-ref="AUTH-NODE-77">
-          <h2 className="page-title" style={{ marginBottom: 32, fontSize: 42 }}>INIT_ACCESS</h2>
-          
-          <div style={{ display: "grid", gap: 20 }}>
-            <label style={{ display: "grid", gap: 8 }}>
-              <span style={{ fontWeight: 900, fontSize: 11, letterSpacing: "0.1em", color: "#444" }}>USER_IDENTIFIER</span>
+        <form className="neo-panel" onSubmit={submit} style={{ maxWidth: 480, width: "100%", background: "#fff" }}>
+          <h2 className="page-title" style={{ marginBottom: 28, fontSize: 32 }}>Sign in</h2>
+
+          <div style={{ display: "grid", gap: 18 }}>
+            <label htmlFor="identifier" style={{ display: "grid", gap: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 11, letterSpacing: "0.06em", color: "var(--text-muted)", textTransform: "uppercase" }}>Identifier</span>
               <input
+                id="identifier"
+                name="identifier"
+                autoComplete="username"
                 value={identifier}
                 onChange={(event) => setIdentifier(event.target.value)}
                 className="input-brutal"
-                placeholder="EMAIL_OR_HANDLE"
+                placeholder="email or handle"
               />
             </label>
 
-            <label style={{ display: "grid", gap: 8 }}>
-              <span style={{ fontWeight: 900, fontSize: 11, letterSpacing: "0.1em", color: "#444" }}>ACCESS_KEY</span>
+            <label htmlFor="password" style={{ display: "grid", gap: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 11, letterSpacing: "0.06em", color: "var(--text-muted)", textTransform: "uppercase" }}>Password</span>
               <input
+                id="password"
+                name="password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 className="input-brutal"
-                placeholder="********"
+                placeholder="••••••••"
               />
             </label>
 
-            <div style={{ marginTop: 12 }}>
-              <NeoButton type="submit" disabled={submitting} style={{ width: "100%", background: "#000", color: "var(--accent-yellow)", fontSize: 14 }}>
-                {submitting ? "VERIFYING_CREDENTIALS..." : "EXECUTE_LOGIN"}
+            <div style={{ marginTop: 8 }}>
+              <NeoButton type="submit" variant="accent" disabled={submitting} style={{ width: "100%", fontSize: 14 }}>
+                {submitting ? "Verifying…" : "Log in"}
               </NeoButton>
             </div>
-            
+
             {error ? (
-              <div style={{ border: "2px solid var(--accent-red)", padding: 12, background: "#fff0f0", color: "var(--accent-red)", fontWeight: 800, fontSize: 11 }}>
-                ERROR: {error.toUpperCase()}
+              <div role="alert" style={{ border: "2px solid var(--danger)", borderRadius: 4, padding: 12, background: "#fdeef0", color: "var(--danger)", fontWeight: 600, fontSize: 12 }}>
+                {error}
               </div>
             ) : null}
 
@@ -99,19 +102,20 @@ export default function LoginPage() {
                   setSubmitting(false);
                 }
               }}
-              style={{ 
-                marginTop: 8, 
-                border: "none", 
-                background: "transparent", 
-                color: "#888",
-                fontWeight: 900, 
-                fontSize: 10,
+              style={{
+                marginTop: 4,
+                border: "none",
+                background: "transparent",
+                color: "var(--text-muted)",
+                fontWeight: 600,
+                fontSize: 11,
                 cursor: "pointer",
                 textAlign: "center",
-                letterSpacing: "0.1em"
+                letterSpacing: "0.04em",
+                textDecoration: "underline",
               }}
             >
-              [ BYPASS_WITH_GUEST_MODE ]
+              Continue as guest (read-only)
             </button>
           </div>
         </form>

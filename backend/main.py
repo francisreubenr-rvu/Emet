@@ -153,6 +153,7 @@ app.include_router(agents_router)
 app.include_router(remediation_router)
 app.include_router(patching_router)
 app.include_router(compliance_router)
+app.include_router(tenants_router)
 
 @app.websocket("/ws/scan/{scan_id}/progress")
 async def ws_scan_progress(websocket: WebSocket, scan_id: str):

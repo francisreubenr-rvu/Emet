@@ -3,6 +3,7 @@ build/
 dist/
 coverage/
 .DS_Store
+._*
 *.log
 .env*
 !.env.example
@@ -14,9 +15,24 @@ out/
 # Python
 __pycache__/
 *.pyc
+.venv/
+.venv_*/
+.pytest_cache/
 
 # Data artifacts
 datasets/
 embeddings/
 emet.db
 backend/emet.db
+artifacts/
+
+# Scan runtime output / crash captures
+*.png
+!docs/**/*.png
+
+# LaTeX build artifacts
+*.aux
+*.out
+*.toc
+
+*.tsbuildinfo

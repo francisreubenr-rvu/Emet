@@ -1,57 +1,44 @@
 import { ReactNode } from "react";
 
-export function Panel({ 
-  children, 
-  className = "", 
-  style = {}, 
-  refId = "0X-00" 
-}: { 
-  children: ReactNode; 
-  className?: string; 
+export function Panel({
+  children,
+  className = "",
+  style = {},
+}: {
+  children: ReactNode;
+  className?: string;
   style?: React.CSSProperties;
+  /** @deprecated retained for call-site compatibility; no longer rendered */
   refId?: string;
 }) {
   return (
-    <section 
-      className={`neo-panel ${className}`.trim()} 
-      style={style}
-      data-ref={refId}
-    >
+    <section className={`neo-panel ${className}`.trim()} style={style}>
       {children}
     </section>
   );
 }
 
-export function SectionTitle({ 
-  children, 
-  subtitle, 
-  icon: Icon 
-}: { 
-  children: ReactNode; 
+export function SectionTitle({
+  children,
+  title,
+  subtitle,
+  icon: Icon,
+}: {
+  children?: ReactNode;
+  title?: ReactNode;
   subtitle?: string;
   icon?: any;
 }) {
   return (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 16 }}>
-        <h2 className="page-title">{children}</h2>
-        {Icon && <Icon size={48} strokeWidth={3} style={{ marginBottom: 24 }} />}
+    <div style={{ marginBottom: 28 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {Icon && <Icon size={26} strokeWidth={2.25} aria-hidden />}
+        <h1 className="page-title">{title ?? children}</h1>
       </div>
       {subtitle && (
-        <div style={{ 
-          background: "#000", 
-          color: "#fff", 
-          display: "inline-block", 
-          padding: "4px 12px", 
-          fontSize: 12, 
-          fontWeight: 800, 
-          letterSpacing: "0.1em",
-          marginTop: -16,
-          marginLeft: 24,
-          border: "2px solid #000"
-        }}>
-          {subtitle.toUpperCase()}
-        </div>
+        <p style={{ margin: "10px 0 0", color: "var(--text-muted)", fontSize: 13, maxWidth: "70ch" }}>
+          {subtitle}
+        </p>
       )}
     </div>
   );
@@ -65,28 +52,26 @@ export function NeoButton({
   size = "md",
   style = {},
   ...rest
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "outline", size?: "sm" | "md" | "lg" }) {
-  const getVariantStyle = () => {
-    if (variant === "outline") return { background: "transparent", color: "#000" };
-    return { background: "#fff", color: "#000" };
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "outline" | "accent";
+  size?: "sm" | "md" | "lg";
+}) {
+  const variants: Record<string, React.CSSProperties> = {
+    primary: { background: "#fff", color: "var(--text-primary)" },
+    outline: { background: "transparent", color: "var(--text-primary)" },
+    accent: { background: "var(--accent)", color: "var(--text-primary)" },
   };
-
-  const getSizeStyle = () => {
-    if (size === "sm") return { padding: "6px 12px", fontSize: 10 };
-    if (size === "lg") return { padding: "16px 24px", fontSize: 14 };
-    return { padding: "12px 18px", fontSize: 12 };
+  const sizes: Record<string, React.CSSProperties> = {
+    sm: { padding: "6px 12px", fontSize: 10 },
+    md: { padding: "10px 16px", fontSize: 12 },
+    lg: { padding: "14px 22px", fontSize: 14 },
   };
 
   return (
     <button
       type={type}
       className={`neo-btn ${className}`.trim()}
-      style={{ 
-        cursor: "pointer", 
-        ...getVariantStyle(), 
-        ...getSizeStyle(),
-        ...style 
-      }}
+      style={{ cursor: "pointer", ...variants[variant], ...sizes[size], ...style }}
       {...rest}
     >
       {children}
@@ -94,17 +79,41 @@ export function NeoButton({
   );
 }
 
-export function Label({ children }: { children: ReactNode }) {
+export function Label({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
-    <label style={{ display: "block", fontWeight: 900, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8, fontSize: 11 }}>
+    <label
+      htmlFor={htmlFor}
+      style={{
+        display: "block",
+        fontWeight: 700,
+        letterSpacing: "0.06em",
+        textTransform: "uppercase",
+        marginBottom: 8,
+        fontSize: 11,
+        color: "var(--text-muted)",
+      }}
+    >
       {children}
     </label>
   );
 }
 
-export function Badge({ children, color = "var(--accent-yellow)" }: { children: ReactNode, color?: string }) {
+const SEVERITY_COLORS: Record<string, string> = {
+  CRITICAL: "var(--sev-critical)",
+  HIGH: "var(--sev-high)",
+  MEDIUM: "var(--sev-medium)",
+  LOW: "var(--sev-low)",
+  INFO: "var(--sev-info)",
+};
+
+export function severityColor(severity?: string): string {
+  return SEVERITY_COLORS[(severity || "INFO").toUpperCase()] || "var(--sev-info)";
+}
+
+export function Badge({ children, color }: { children: ReactNode; color?: string }) {
+  const resolved = color || severityColor(typeof children === "string" ? children : undefined);
   return (
-    <span className="severity-badge" style={{ background: color }}>
+    <span className="severity-badge" style={{ background: resolved }}>
       {children}
     </span>
   );

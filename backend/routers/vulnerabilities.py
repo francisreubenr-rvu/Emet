@@ -10,7 +10,7 @@ from db.models import AttackPathModel, VulnerabilityModel
 from normalizer.unified_schema import FindingStatus, VulnerabilityStatusUpdateRequest
 from services.auth_guard import verify_access_token
 from services.audit import write_audit_event
-from services.enrichment import calculate_dynamic_risk_score, mock_fetch_epss_score, mock_check_cisa_kev
+from services.enrichment import calculate_dynamic_risk_score, fetch_epss_score, check_cisa_kev
 
 router = APIRouter(prefix="/api/vulnerabilities", tags=["vulnerabilities"])
 
@@ -145,9 +145,9 @@ async def recalculate_risk_score(
         raise HTTPException(status_code=404, detail="Vulnerability not found")
     
     if row.cve_id:
-        row.epss_score = mock_fetch_epss_score(row.cve_id)
-        row.cisa_kev = mock_check_cisa_kev(row.cve_id)
-    
+        row.epss_score = await fetch_epss_score(row.cve_id)
+        row.cisa_kev = await check_cisa_kev(row.cve_id)
+
     row.dynamic_risk_score = calculate_dynamic_risk_score(
         row.cvss_score, row.epss_score, row.cisa_kev
     )

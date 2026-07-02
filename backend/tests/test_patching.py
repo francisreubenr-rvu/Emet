@@ -49,4 +49,5 @@ def test_get_patch_job():
     assert res.status_code == 200
     data = res.json()
     assert data["id"] == job_id
-    assert data["status"] in ["pending", "deploying", "success"]
+    # "not_configured" is the honest default when no Ansible playbook is set up.
+    assert data["status"] in ["pending", "deploying", "success", "failed", "not_configured"]

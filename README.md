@@ -1,84 +1,100 @@
-# EMET - Enterprise Defensive Vulnerability Intelligence Platform
+# EMET — Defensive Vulnerability Intelligence Platform
 
-EMET (Enterprise Managed Evolutionary Tooling) is a production-ready, defensive-first vulnerability orchestration platform. It combines automated scanning, AI-driven intelligence, and remediation workflows into a unified enterprise suite.
+EMET orchestrates open-source and commercial vulnerability scanners, normalizes
+their output into a single schema, enriches findings with **real** threat
+intelligence, and layers AI-assisted analysis on top — with transparent
+provenance for every value it reports.
 
-The platform features a distinctive **Professional Neobrutalism 2.0** visual identity, designed for high-performance defensive intelligence operations.
+It is a defensive tool. It does not generate or run exploit code.
 
-## Key Features (Phase 4 Ready)
+## What EMET actually does
 
-- **Agent-Based Architecture**: Deploy lightweight agents for internal network visibility and continuous monitoring.
-- **Remediation Orchestration**: Full synchronization with Jira and ServiceNow for end-to-end vulnerability lifecycle management.
-- **Automated Patch Deployment**: Orchestrate security patches via Ansible and Terraform directly from the console.
-- **Dynamic Risk Scoring**: Advanced prioritization using EPSS, CISA KEV, and internal business context.
-- **Compliance Mapping Engine**: Real-time mapping of findings to SOC2, ISO27001, HIPAA, and GDPR controls.
-- **Multi-Tenancy & Enterprise RBAC**: Robust access control with tenant isolation and granular permission sets.
-- **Scanner Ecosystem**: Support for Nmap, Rustscan, Nuclei, Nikto, Trivy, Zap, and more (all fully normalized).
-- **Hardened Security**: Built-in SSRF protection, command injection prevention, and encrypted data at rest.
+**Scanning & normalization (core, works out of the box for installed tools)**
+- Runs scanners as real subprocesses: Nmap, Rustscan, Nuclei, Nikto, Trivy,
+  Semgrep, Gitleaks, ZAP, plus adapters for Nessus/OpenVAS reports. Each runner
+  checks tool availability and degrades gracefully when a tool is missing.
+- Normalizes every result into one `UnifiedFinding` schema (CVSS, CWE, ports,
+  evidence, references), deduplicates, and records per-scanner run status so
+  partial failures are visible rather than hidden.
 
-## Visual Identity
+**Threat-intelligence enrichment (real data, no fabrication)**
+- **NVD** — CVSS base score and references pulled from the NVD CVE API 2.0.
+- **EPSS** — exploitation probability from the FIRST.org EPSS API.
+- **CISA KEV** — known-exploited status from the official CISA KEV feed (cached
+  locally; refresh with `python scripts/download_cisa_kev.py`).
+- A `dynamic_risk_score` combines CVSS + EPSS + KEV. When a feed is unreachable,
+  the corresponding value stays at its default — EMET never invents a score.
 
-EMET utilizes **Professional Neobrutalism 2.0**:
-- **Rugged Tactile UX**: Mechanical button states and industrial control surfaces.
-- **High-Contrast Design**: Bold typography and technical blueprint aesthetics.
-- **LED Status Indicators**: Real-time visual telemetry for backend system health.
+**AI analysis (optional, honest fallback)**
+- Google Gemini summarizes findings grounded on retrieved context. Without a
+  valid `GEMINI_API_KEY`, EMET returns an explicit "AI analysis unavailable"
+  response instead of fabricating one.
+- RAG chat retrieves from ingested CVE knowledge and your own scan findings.
 
-## Documentation
+**Access control**
+- Cookie-based JWT auth with scopes (`read`/`write`) and roles, plus tenant
+  isolation endpoints (global-admin gated).
 
-For a comprehensive introduction, please refer to the **[Quick Start PDF](startup_guide.pdf)** located in the root directory.
+**Compliance mapping**
+- Maps findings to SOC2 / PCI-DSS / HIPAA controls using a documented
+  severity- and KEV-based heuristic (not a certified control-mapping engine).
 
-## Repo Structure
+## Integrations that require configuration
 
-- `frontend/` - Next.js (App Router) + Tailwind + Professional Neobrutalist components.
-- `backend/` - FastAPI (Python) orchestration layer with Redis/Celery background workers.
-- `agent/` - Lightweight monitoring agents.
-- `docs/` - Technical documentation and setup guides.
+These talk to real external systems. Without credentials they report their state
+honestly and take no action — they never fake success:
 
-## Quick Start (Docker)
+| Integration | Configured with | Behavior when unconfigured |
+|---|---|---|
+| Jira ticketing | `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY` | Ticket tracked locally, reported `synced: false` |
+| Patch automation | `EMET_PATCH_PLAYBOOK` + `ansible-playbook` on PATH | Job status `not_configured`, no patch applied |
+| CSPM connectors | AWS/GCP/Azure provider credentials | Status `not_configured` |
 
-1. **Environment Setup**:
-   ```bash
-   cp .env.example .env
-   ```
+## Architecture
 
-2. **Launch Stack**:
-   ```bash
-   docker compose up --build
-   ```
+- `frontend/` — Next.js (App Router) console with a light neobrutalist UI.
+- `backend/` — FastAPI orchestration layer; Redis for queues/pub-sub; SQLAlchemy
+  over SQLite (dev) or PostgreSQL (prod).
+- `agent/` — lightweight monitoring agent client.
+- `scripts/` — dataset/feed download and index-build utilities.
 
-3. **Access Platform**:
-   - Dashboard: `http://localhost:3000`
-   - API Docs: `http://localhost:8000/docs`
+## Quick start (Docker)
 
-4. **Default Credentials**:
-   - Administrator: `admin@emet.local` / `emet`
-   - Analyst: `analyst@emet.local` / `emet`
-
-## Manual Execution
-
-If running without Docker, ensure you have **Redis** and **PostgreSQL** active.
-
-### Frontend
 ```bash
-cd frontend
-npm install
-npm run dev
+cp .env.example .env      # fill in SECRET_KEY etc.
+docker compose up --build
 ```
 
-### Backend
+- Dashboard: http://localhost:3000
+- API docs: http://localhost:8000/docs
+
+**Demo credentials:** `admin` / `emet`, `analyst@emet.local` / `emet`, or guest
+(read-only). Change these before any real deployment.
+
+## Manual run
+
 ```bash
+# Backend (needs Redis; SQLite works for local dev)
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
+python3.12 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn main:app --reload
+python worker.py          # background scan worker
+
+# Frontend
+cd frontend && npm install && npm run dev
 ```
 
-### Worker
+## Tests
+
 ```bash
-cd backend
-python worker.py
+cd backend && pytest      # 76 tests
 ```
 
-## Security & Ethics
+Enrichment tests exercise the live EPSS/KEV feeds and degrade gracefully offline.
 
-EMET is designed strictly for **defensive security operations**. It does not generate or execute exploit code. All target validations must comply with organizational security policies.
+## Security
+
+Defensive use only. Target validation blocks SSRF and argument-injection vectors;
+data-at-rest encryption and signed audit logging are configurable. Validate that
+you are authorized to scan any target before running EMET against it.

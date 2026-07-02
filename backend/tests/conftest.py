@@ -107,6 +107,20 @@ class FakeRedis:
         return FakePubSub()
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _create_schema():
+    """Ensure the shared engine has all tables before any test runs.
+
+    Previously table creation only happened inside the ``client`` fixture, so
+    tests exercising the pipeline or services directly failed with
+    "no such table" depending on execution order.
+    """
+    from db.database import Base, engine
+
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
 @pytest.fixture
 def client(monkeypatch: pytest.MonkeyPatch):
     from db.database import Base, engine

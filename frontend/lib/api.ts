@@ -225,9 +225,8 @@ export async function getTickets() {
 }
 
 export async function syncTicket(ticketId: number) {
-  return request<any>("/api/v1/remediation/sync", {
+  return request<any>(`/api/v1/remediation/sync?ticket_id=${encodeURIComponent(ticketId)}`, {
     method: "POST",
-    params: { ticket_id: ticketId },
   });
 }
 

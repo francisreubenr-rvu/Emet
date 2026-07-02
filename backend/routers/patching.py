@@ -23,9 +23,7 @@ class PatchResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 @router.post("/deploy", response_model=PatchResponse)
 async def deploy_patch(request: PatchRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):

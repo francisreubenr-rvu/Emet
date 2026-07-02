@@ -85,28 +85,27 @@ export function Sidebar() {
         zIndex: 2000,
         background: "var(--bg-dark)",
         color: "var(--text-inverse)",
-        borderRight: "4px solid var(--accent-yellow)",
+        borderRight: "3px solid var(--accent-strong)",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        boxShadow: "10px 0px 0px rgba(0,0,0,0.1)"
       }}
     >
       <div>
-        <div style={{ padding: 24, borderBottom: "4px solid #1f1f1f", position: "relative" }}>
-          <h1 style={{ color: "var(--accent-yellow)", fontSize: 62, lineHeight: 0.8, marginBottom: 8 }}>EMET</h1>
-          <div style={{ 
-            fontSize: 9, 
-            background: "var(--accent-yellow)", 
-            color: "#000", 
-            display: "inline-block", 
-            padding: "2px 6px", 
-            fontWeight: 900,
-            letterSpacing: "0.15em"
+        <div style={{ padding: 24, borderBottom: "2px solid #2a2a30", position: "relative" }}>
+          <h1 style={{ color: "var(--accent)", fontSize: 48, lineHeight: 0.9, marginBottom: 10 }}>EMET</h1>
+          <div style={{
+            fontSize: 9,
+            background: "var(--accent)",
+            color: "#000",
+            display: "inline-block",
+            padding: "3px 7px",
+            fontWeight: 700,
+            letterSpacing: "0.12em",
+            borderRadius: 3,
           }}>
-            SYSTEM v4.0 // PRO
+            VULNERABILITY SCANNER + INTEL
           </div>
-          <div style={{ position: "absolute", bottom: -2, right: 0, width: 40, height: 4, background: "var(--accent-yellow)" }} />
         </div>
 
         <nav style={{ padding: 12, display: "grid", gap: 6 }}>
@@ -120,18 +119,20 @@ export function Sidebar() {
                 className="sidebar-nav-item"
                 style={{
                   border: "2px solid transparent",
-                  borderLeft: active ? "6px solid var(--accent-yellow)" : "2px solid transparent",
-                  padding: "14px 12px",
+                  borderLeft: active ? "5px solid var(--accent)" : "2px solid transparent",
+                  borderRadius: 4,
+                  padding: "12px 12px",
                   display: "flex",
                   gap: 12,
                   alignItems: "center",
-                  fontWeight: 800,
-                  letterSpacing: "0.08em",
-                  background: active ? "#111" : "transparent",
-                  color: active ? "var(--accent-yellow)" : "#888",
+                  fontWeight: 600,
+                  letterSpacing: "0.06em",
+                  background: active ? "#24242a" : "transparent",
+                  color: active ? "var(--accent)" : "#a1a1aa",
                   textTransform: "uppercase",
-                  fontSize: 10,
+                  fontSize: 10.5,
                 }}
+                aria-current={active ? "page" : undefined}
               >
                 <Icon size={16} strokeWidth={active ? 3 : 2} />
                 <span>{item.label}</span>
@@ -141,34 +142,36 @@ export function Sidebar() {
         </nav>
       </div>
 
-      <div style={{ padding: 16, borderTop: "4px solid #1f1f1f", display: "grid", gap: 12, background: "#080808" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 10, fontWeight: 900, letterSpacing: "0.1em" }}>
-          <div style={{ 
-            width: 10, 
-            height: 10, 
-            background: backendOnline ? "var(--accent-green)" : "var(--accent-red)",
-            boxShadow: backendOnline ? "0 0 10px var(--accent-green)" : "0 0 10px var(--accent-red)"
+      <div style={{ padding: 16, borderTop: "2px solid #2a2a30", display: "grid", gap: 12, background: "#101013" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em" }}>
+          <div style={{
+            width: 9,
+            height: 9,
+            borderRadius: "50%",
+            background: backendOnline ? "var(--ok)" : "var(--danger)",
           }} />
-          <span style={{ color: backendOnline ? "var(--accent-green)" : "var(--accent-red)" }}>
-            {backendOnline ? "CORE ONLINE" : "SYSTEM OFFLINE"}
+          <span style={{ color: backendOnline ? "var(--ok)" : "var(--danger)" }}>
+            {backendOnline ? "BACKEND ONLINE" : "BACKEND OFFLINE"}
           </span>
         </div>
-        
-        <div style={{ border: "2px solid #222", padding: 12, position: "relative" }}>
-          <div style={{ position: "absolute", top: -8, left: 8, background: "#080808", padding: "0 4px", fontSize: 8, color: "#444", fontWeight: 800 }}>QUEUE_METRICS</div>
-          <div style={{ fontWeight: 900, fontSize: 14, color: "#fff" }}>
-            DEPTH: <span style={{ color: "var(--accent-yellow)" }}>{queueDepth === null ? "ERR" : queueDepth}</span>
+
+        <div style={{ border: "2px solid #2a2a30", borderRadius: 4, padding: 12, position: "relative" }}>
+          <div style={{ position: "absolute", top: -8, left: 8, background: "#101013", padding: "0 4px", fontSize: 8, color: "#6b7280", fontWeight: 700, letterSpacing: "0.08em" }}>QUEUE DEPTH</div>
+          <div style={{ fontWeight: 700, fontSize: 14, color: "#fff", fontFamily: "var(--font-code)" }}>
+            {queueDepth === null ? "—" : queueDepth}
           </div>
           <button
-            style={{ 
-              width: "100%", 
-              marginTop: 12, 
-              background: "var(--accent-yellow)", 
-              color: "#000", 
-              padding: "10px", 
-              border: "none",
-              fontWeight: 900,
+            style={{
+              width: "100%",
+              marginTop: 12,
+              background: "var(--accent)",
+              color: "#000",
+              padding: "10px",
+              border: "2px solid #000",
+              borderRadius: 4,
+              fontWeight: 700,
               fontSize: 10,
+              letterSpacing: "0.06em",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -183,8 +186,8 @@ export function Sidebar() {
               }
             }}
           >
-            <LogOut size={14} strokeWidth={3} />
-            INIT_LOGOUT
+            <LogOut size={14} strokeWidth={2.5} />
+            LOG OUT
           </button>
         </div>
       </div>

@@ -174,7 +174,7 @@ async def execute_scan_job(scan_id: str, target: str, profile: str, scanners: li
 
         findings = dedupe_findings(all_findings)
         findings = await enrich_findings(findings)
-        rag = await run_rag_pipeline(findings)
+        rag = await run_rag_pipeline(findings, session=db)
         unified = await analyze_findings(findings, rag_context=rag["context"], mode="unified")
         zero_day = await detect_zero_day_risk(findings, target)
         self_audit = await run_self_audit(findings)

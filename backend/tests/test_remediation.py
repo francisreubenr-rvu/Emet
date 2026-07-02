@@ -10,8 +10,12 @@ from db.models import VulnerabilityModel, RemediationTicketModel
 # Setup in-memory SQLite database for testing
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 
+from sqlalchemy.pool import StaticPool
+
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -30,10 +34,13 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def setup_db():
+    # Re-assert this module's DB override in case another module leaked one.
+    app.dependency_overrides[get_db] = override_get_db
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     yield
-    
+    app.dependency_overrides.pop(get_db, None)
+
 def test_create_ticket_finding_not_found():
     response = client.post("/api/v1/remediation/tickets?finding_id=nonexistent")
     assert response.status_code == 404
@@ -124,4 +131,6 @@ def test_sync_ticket():
     response = client.post(f"/api/v1/remediation/sync?ticket_id={ticket_id}")
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "in-progress" # based on our mock
+    # With no Jira integration configured, sync must NOT fabricate a remote status.
+    assert data["synced"] is False
+    assert data["status"] == "open"

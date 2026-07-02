@@ -1,17 +1,46 @@
 :root {
-  --bg-primary: #f2f2f2;
-  --bg-dark: #000000;
-  --accent-yellow: #ffea00;
-  --accent-red: #ff3e3e;
-  --accent-green: #00ff73;
-  --accent-blue: #2d66ff;
-  --border-width: 3px;
-  --border: #000000;
-  --shadow: 6px 6px 0px #000000;
-  --text-primary: #000000;
+  /* Surfaces */
+  --bg-primary: #f4f3ef;
+  --bg-dark: #17171a;
+  --surface: #ffffff;
+  --surface-muted: #faf9f6;
+
+  /* Brand + accents (used sparingly, for emphasis and focus) */
+  --accent: #ffcf33;        /* signature amber — calmer than pure #ffea00 */
+  --accent-strong: #f5b301;
+  --focus: #2d66ff;
+
+  /* Severity (WCAG-AA against white or the dark chip text they carry) */
+  --sev-critical: #d1132e;
+  --sev-high: #e8590c;
+  --sev-medium: #b8860b;
+  --sev-low: #2d66ff;
+  --sev-info: #6b7280;
+  --ok: #1a9e57;
+  --danger: #d1132e;
+
+  /* Ink */
+  --text-primary: #17171a;
+  --text-muted: #565663;
   --text-inverse: #ffffff;
-  --sidebar-width: 240px;
-  --neo-padding: 24px;
+  --border: #17171a;
+
+  /* Neobrutalist geometry — lighter than before, edge kept */
+  --border-width: 2px;
+  --radius: 4px;
+  --shadow: 3px 3px 0 var(--border);
+  --shadow-lift: 5px 5px 0 var(--border);
+  --sidebar-width: 260px;
+
+  /* Spacing scale */
+  --pad: 20px;
+
+  /* Backward-compatible aliases (map legacy tokens to the refined palette) */
+  --accent-yellow: var(--accent);
+  --accent-red: var(--danger);
+  --accent-green: var(--ok);
+  --accent-blue: var(--focus);
+  --neo-padding: var(--pad);
 }
 
 * {
@@ -24,148 +53,177 @@ body {
   padding: 0;
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-body), "IBM Plex Mono", monospace;
+  font-family: var(--font-body), "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
-/* Blueprint Grid Background */
+/* Subtle technical grid — part of the identity, dialed back for readability */
 body::after {
   content: "";
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-  background-size: 40px 40px;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(23, 23, 26, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23, 23, 26, 0.028) 1px, transparent 1px);
+  background-size: 32px 32px;
   z-index: -1;
   pointer-events: none;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
   margin: 0;
   font-family: var(--font-display), "Bebas Neue", sans-serif;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
-  font-weight: 800;
+  font-weight: 400;
 }
 
+a {
+  color: inherit;
+}
+
+/* Keyboard focus — visible on every interactive element */
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Panels ------------------------------------------------------------------ */
 .neo-panel {
   border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
-  background: #ffffff;
-  padding: var(--neo-padding);
+  background: var(--surface);
+  padding: var(--pad);
   position: relative;
 }
 
-.neo-panel::before {
-  content: "REF: " attr(data-ref);
-  position: absolute;
-  top: -12px;
-  right: 12px;
-  font-size: 9px;
-  background: var(--bg-dark);
-  color: var(--accent-yellow);
-  padding: 2px 6px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  display: block;
-}
-
+/* Buttons ----------------------------------------------------------------- */
 .neo-btn {
   border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
-  font-weight: 900;
+  font-family: inherit;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   font-size: 12px;
-  transition: all 100ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 
 .neo-btn:hover {
-  transform: translate(-3px, -3px);
-  box-shadow: 9px 9px 0px #000000;
-  background: var(--accent-yellow);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lift);
 }
 
 .neo-btn:active {
-  transform: translate(3px, 3px);
-  box-shadow: 2px 2px 0px #000000;
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--border);
 }
 
+.neo-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--shadow);
+}
+
+/* Tables ------------------------------------------------------------------ */
 .neo-table {
   width: 100%;
   border-collapse: collapse;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 .neo-table th {
   text-align: left;
   background: var(--bg-dark);
   color: var(--text-inverse);
-  padding: 12px;
+  padding: 10px 12px;
   font-size: 11px;
-  letter-spacing: 0.1em;
-  border: var(--border-width) solid var(--border);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .neo-table td {
-  padding: 14px 12px;
-  border: var(--border-width) solid var(--border);
-  font-weight: 600;
+  padding: 12px;
+  border-top: 1px solid #e4e2db;
+  font-weight: 500;
   font-size: 13px;
 }
 
-.neo-table tr:nth-child(even) {
-  background: #f9f9f9;
+.neo-table tbody tr:nth-child(even) {
+  background: var(--surface-muted);
 }
 
+.neo-table tbody tr:hover {
+  background: #fff7d9;
+}
+
+/* Sidebar nav ------------------------------------------------------------- */
 .sidebar-nav-item {
-  transition: none !important;
+  transition: background 120ms ease, color 120ms ease;
 }
 
 .sidebar-nav-item:hover {
-  background: #222 !important;
-  color: var(--accent-yellow) !important;
-  transform: translateX(4px);
+  background: #26262b;
+  color: var(--accent);
 }
 
+/* Badges ------------------------------------------------------------------ */
 .severity-badge {
-  border: var(--border-width) solid #000000;
-  font-weight: 900;
-  padding: 4px 10px;
-  font-size: 10px;
-  letter-spacing: 0.05em;
-}
-
-.page-title {
-  font-size: 64px;
-  line-height: 0.9;
-  margin-bottom: 24px;
-  background: var(--bg-dark);
-  color: var(--accent-yellow);
   display: inline-block;
-  padding: 8px 16px;
   border: var(--border-width) solid var(--border);
-  box-shadow: var(--shadow);
+  border-radius: var(--radius);
+  font-weight: 700;
+  padding: 3px 9px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-inverse);
 }
 
+/* Page title — bold and technical, no longer a 64px shouting block -------- */
+.page-title {
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+  padding-bottom: 6px;
+  border-bottom: 3px solid var(--accent-strong);
+  display: inline-block;
+}
+
+/* Inputs ------------------------------------------------------------------ */
 .input-brutal {
-  border: var(--border-width) solid #000000;
-  box-shadow: 4px 4px 0px #000000;
-  padding: 12px;
-  font-weight: 700;
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 10px 12px;
+  font-family: inherit;
+  font-weight: 500;
+  font-size: 14px;
   width: 100%;
+  background: var(--surface);
 }
 
 .input-brutal:focus {
   outline: none;
-  background: #fffdf0;
-  box-shadow: 6px 6px 0px #000000;
+  box-shadow: var(--shadow-lift);
+  border-color: var(--focus);
+}
+
+/* Motion preferences ------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .neo-btn:hover { transform: none; }
 }

@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 
 from normalizer.unified_schema import UnifiedFinding, VerificationStatus, Severity
+from services import intel_feeds
 
 
 TRUST_RANK = {
@@ -17,16 +18,19 @@ TRUST_RANK = {
 def _source_rank(source: str) -> int:
     return TRUST_RANK.get(source.lower(), 0)
 
-def mock_fetch_epss_score(cve_id: str) -> float:
-    # Mock EPSS score (0.0 to 1.0)
-    if "2021" in cve_id:
-        return 0.85
-    return 0.05
 
-def mock_check_cisa_kev(cve_id: str) -> bool:
-    if "2021" in cve_id:
-        return True
-    return False
+async def fetch_epss_score(cve_id: str) -> float:
+    """Real EPSS probability from FIRST.org; 0.0 when unavailable (never fabricated)."""
+    score = await intel_feeds.fetch_epss_score(cve_id)
+    return score if score is not None else 0.0
+
+
+async def check_cisa_kev(cve_id: str) -> bool:
+    """Real CISA KEV membership; False when the catalog lacks the CVE or is
+    unreachable (we do not guess membership)."""
+    result = await intel_feeds.check_cisa_kev(cve_id)
+    return bool(result)
+
 
 def calculate_dynamic_risk_score(cvss_score: float, epss_score: float, cisa_kev: bool) -> float:
     base = cvss_score * 0.5
@@ -35,21 +39,23 @@ def calculate_dynamic_risk_score(cvss_score: float, epss_score: float, cisa_kev:
     score = base + epss_component + kev_bump
     return min(10.0, score)
 
+
 def map_compliance(finding: UnifiedFinding) -> list[str]:
     violations = []
-    
+
     # Severity-based mapping
     if finding.severity in (Severity.CRITICAL, Severity.HIGH):
         violations.extend(["SOC2 CC7.1", "PCI-DSS 6.1"])
     elif finding.severity == Severity.LOW:
         violations.append("HIPAA 164.312")
-        
-    # Specific CVE mapping
-    if finding.cve_id == "CVE-2021-1234" and "PCI-DSS 6.1" not in violations:
+
+    # Known-exploited findings implicate patch-management controls directly.
+    if getattr(finding, "cisa_kev", False):
         violations.append("PCI-DSS 6.1")
-        
+
     # Deduplicate and return
     return list(dict.fromkeys(violations))
+
 
 def merge_enrichment_records(
     finding: UnifiedFinding,
@@ -156,39 +162,43 @@ def merge_enrichment_records(
 
 
 async def enrich_findings(findings: list[UnifiedFinding]) -> list[UnifiedFinding]:
-    """Phase 2 slice: deterministic enrichment pass with provenance.
+    """Enrichment pass with real threat-intelligence provenance.
 
-    This keeps the pipeline online even when external APIs are unavailable.
+    Sources every value from a live feed (NVD, EPSS, CISA KEV) and degrades to
+    the finding's own values when a feed is unavailable — it never invents data.
     """
 
     enriched: list[UnifiedFinding] = []
     for finding in findings:
         records: list[dict] = []
-        if finding.cve_id:
-            records.append(
-                {
-                    "source": "nvd",
-                    "cve_id": finding.cve_id,
-                    "cvss_score": finding.cvss_score,
-                    "references": [f"https://nvd.nist.gov/vuln/detail/{finding.cve_id}"],
-                }
-            )
-            if finding.cvss_score >= 7.0:
+        if intel_feeds.is_valid_cve(finding.cve_id):
+            nvd = await intel_feeds.fetch_nvd_metrics(finding.cve_id)
+            if nvd:
                 records.append(
                     {
-                        "source": "cisa_kev",
-                        "cve_id": finding.cve_id,
-                        "cvss_score": finding.cvss_score,
-                        "references": ["https://www.cisa.gov/known-exploited-vulnerabilities-catalog"],
+                        "source": "nvd",
+                        "cve_id": nvd["cve_id"],
+                        "cvss_score": nvd["cvss_score"]
+                        if nvd["cvss_score"] is not None
+                        else finding.cvss_score,
+                        "references": nvd["references"]
+                        or [f"https://nvd.nist.gov/vuln/detail/{finding.cve_id}"],
                     }
                 )
 
         updated, _meta = merge_enrichment_records(finding, records)
-        if updated.cve_id:
-            updated.epss_score = mock_fetch_epss_score(updated.cve_id)
-            updated.cisa_kev = mock_check_cisa_kev(updated.cve_id)
+        if intel_feeds.is_valid_cve(updated.cve_id):
+            updated.epss_score = await fetch_epss_score(updated.cve_id)
+            updated.cisa_kev = await check_cisa_kev(updated.cve_id)
+            if updated.cisa_kev:
+                updated.references = list(
+                    dict.fromkeys(
+                        [*updated.references, "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"]
+                    )
+                )
         updated.dynamic_risk_score = calculate_dynamic_risk_score(
             updated.cvss_score, updated.epss_score, updated.cisa_kev
         )
+        updated.compliance_violations = map_compliance(updated)
         enriched.append(updated)
     return enriched
