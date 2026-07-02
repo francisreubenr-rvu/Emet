@@ -50,6 +50,17 @@ jobs:
       - name: Build static export
         run: npm run build
 
+      # Next 16 emits App Router segment-prefetch payloads whose names contain
+      # ".." (e.g. __next..__full.txt). The GitHub Pages artifact extractor
+      # rejects "*.." paths as traversal and the deploy hangs. These files only
+      # power soft-navigation prefetch; every route keeps its own index.html, so
+      # removing them leaves the site fully functional (nav falls back to full
+      # page loads).
+      - name: Strip prefetch payloads with unsafe names
+        run: |
+          find out -type f -name '*..*' -delete
+          echo "Remaining unsafe-named files: $(find out -name '*..*' | wc -l)"
+
       - name: Disable Jekyll processing
         run: touch out/.nojekyll
 
